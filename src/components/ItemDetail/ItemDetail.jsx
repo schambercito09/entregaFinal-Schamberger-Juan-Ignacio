@@ -1,6 +1,7 @@
 import { useContext } from "react"
 import { ItemCount } from "../ItemCount/ItemCount"
 import { CartContext } from "../../context/CartContext"
+import Swal from "sweetalert2"
 
 
 export const ItemDetail = ({id, url, price, stock, name}) => {
@@ -17,6 +18,10 @@ export const ItemDetail = ({id, url, price, stock, name}) => {
     const onAdd = (quantity) => { 
 
       addItem(item,quantity)
+      Swal.fire({
+        icon: "success",
+        title: "Se agrego el producto al carrito "
+      })
 
      }
 

@@ -1,9 +1,31 @@
 import React, { useContext } from "react";
+import { Link } from 'react-router-dom'
 import { CartContext } from "../../context/CartContext";
+import Swal from "sweetalert2";
 
 export const Cart = () => {
   const { cart, clearCart, removeItem, totalCompra } = useContext(CartContext);
   console.log(cart);
+  const hundleDeleteItem = (item) => { 
+    removeItem(item.id)
+
+    Swal.fire({
+      icon: "question",
+      title: `Estas Seguro que quieren eliminar ${item.name} del carrito?`,
+      showCancelButton:true,
+      showConfirmButton:true,
+
+    }).then(resp =>{
+      if(resp.isConfirmed){
+        removeItem(item.id);
+        Swal.fire({
+          icon:"success",
+          title:"Producto Eliminado"
+        })
+      }
+    })
+
+   }
 
   return (
     <>
@@ -19,7 +41,7 @@ export const Cart = () => {
               <div>
                 <button
                   className="btn btn-danger"
-                  onClick={() => removeItem(item.id)}
+                  onClick={() => hundleDeleteItem(item)}
                 >
                   Eliminar
                 </button>
@@ -29,10 +51,20 @@ export const Cart = () => {
         ))}
       </div>
       <div className="container">
+        {totalCompra > 0 ? 
+        <>
         <h4>Total Compra: {totalCompra}</h4>
         <button className="btn btn-outline-success" onClick={clearCart}>
           Vaciar Carrito
         </button>
+        <Link to="/checkout">
+        <button className="ms-2 btn btn-success" onClick={clearCart}>
+          Comprar
+        </button>
+        </Link>
+        
+        </> : <h4>Carrito vacio</h4> }
+        
       </div>
     </>
   );

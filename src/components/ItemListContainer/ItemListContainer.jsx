@@ -1,35 +1,42 @@
-import {useEffect, useState} from "react"
-import { getProducts } from "../../asyncMock";
+import { useEffect, useState } from "react";
 import { ItemList } from "../ItemList/ItemList";
 import { useParams } from "react-router-dom";
+import { collection, doc, getDocs, query, where } from "firebase/firestore";
+import { db } from "../../config/firebaseConfig";
+import { seedProducts } from "../../utils/seedsProducts";
 
 export const ItemListContainer = () => {
+  const { category } = useParams();
 
-  const {category} = useParams();
-    
   const [products, setProducts] = useState([]);
-  const [isLoading , setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => { 
-    getProducts()
-    .then(resp=>{
-      //verificamos si existe una category en el parametro
-      if(category){
-        const productsFilter = resp.filter(product => product.category === category);
-        setProducts(productsFilter)
-      }else{
-        //si no existe category en el parametro seteamos todos los productos en el state products  
-        setProducts(resp);
-      }
+  const getProductsDB = (category) => {
+    //const myProducts = collection(db, "products");
+    const myProducts = category ? query(collection(db, "products"), where("category", "==", category)) : collection(db, "products")
+
+
+    getDocs(myProducts).then((response) => {
       
-      setIsLoading(false);
+      const productList = response.docs.map( doc => {
+        const item = {
+          id: doc.id,
+          ...doc.data()
+        }
+        return item;
+      } )
 
-    })
-   },[category])
+      setProducts(productList);
+      setIsLoading(false);
+    });
+  };
+  useEffect(() => {
+    setIsLoading(true)
+    getProductsDB(category);
+    //seedProducts(); //! Ejecutar solo una vez 
+  }, [category]);
 
   return (
-  <>
-    {isLoading ? <h2>Cargando...</h2> :  <ItemList products={products}/> }
-  </>
-  )
-}
+    <>{isLoading ? <h2>Cargando...</h2> : <ItemList products={products} />}</>
+  );
+};
